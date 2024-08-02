@@ -8,7 +8,6 @@ public class CharacterMovement : MonoBehaviour
     public Camera playerCamera;
     private Vector3 moveDirection;
     private float rotationX;
-    [SerializeField] private float moveSpeed;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private float maxLookUpAngle = 90f;
     [SerializeField] private float maxLookDownAngle = -90f;
@@ -20,18 +19,22 @@ public class CharacterMovement : MonoBehaviour
 
     void Update()
     {
-        Vector3 forward = transform.TransformDirection(Vector3.forward);
-        Vector3 right = transform.TransformDirection(Vector3.right);
+        if (!InventoryManager.Instance.isInventoryOpen)
+        {
+            Vector3 forward = transform.TransformDirection(Vector3.forward);
+            Vector3 right = transform.TransformDirection(Vector3.right);
 
-        moveDirection = (forward * Input.GetAxis("Vertical")) + (right * Input.GetAxis("Horizontal"));
+            moveDirection = (forward * Input.GetAxis("Vertical")) + (right * Input.GetAxis("Horizontal"));
 
-        controller.Move(moveDirection * Time.deltaTime * moveSpeed);
-        float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
-        float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-        rotationX -= mouseY;
-        rotationX = Mathf.Clamp(rotationX, maxLookDownAngle, maxLookUpAngle);
-        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-        transform.rotation *= Quaternion.Euler(0, mouseX * rotationSpeed, 0);
+            controller.Move(moveDirection * Time.deltaTime * Player.Instance.moveSpeed);
+            float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
+            float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
+            rotationX -= mouseY;
+            rotationX = Mathf.Clamp(rotationX, maxLookDownAngle, maxLookUpAngle);
+            playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+            transform.rotation *= Quaternion.Euler(0, mouseX * rotationSpeed, 0);
+        }
+
     }
 }
 

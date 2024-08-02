@@ -17,3 +17,6 @@ MonoBehaviour:
   itemDescription: Potion that makes you walk faster
   itemIcon: {fileID: 21300000, guid: bd66dd91f3b39384ca90e7a10b03e212, type: 3}
   amount: 1
+  isSelected: 0
+  itemType: 1
+  value: 10

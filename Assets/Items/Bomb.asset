@@ -17,3 +17,6 @@ MonoBehaviour:
   itemDescription: You can throw it and make it explode
   itemIcon: {fileID: 21300000, guid: aed2caa11560c6b4fb0217ffbdf5e01c, type: 3}
   amount: 1
+  isSelected: 0
+  itemType: 2
+  value: 30

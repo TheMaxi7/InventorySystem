@@ -6,7 +6,7 @@ public class PickUp : MonoBehaviour, IInteractable
 {
     public void Interact()
     {
-        InventoryManager.Instance.AddItem(this.GetComponent<ItemController>().item);
-        Destroy(this.gameObject);
+        InventoryManager.Instance.AddItem(GetComponent<ItemController>().item);
+        Destroy(gameObject);
     }
 }

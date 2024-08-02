@@ -17,3 +17,6 @@ MonoBehaviour:
   itemDescription: A potion that heals you by 10 HP
   itemIcon: {fileID: 21300000, guid: d33fec02fc9fc7747bed2cef5ebe3d30, type: 3}
   amount: 1
+  isSelected: 0
+  itemType: 0
+  value: 30

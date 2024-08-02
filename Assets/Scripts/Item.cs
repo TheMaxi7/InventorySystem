@@ -10,5 +10,15 @@ public class Item : ScriptableObject
     public string itemDescription;
     public Sprite itemIcon;
     public int amount;
+    public bool isSelected = false;
+    public ItemType itemType;
+    public int value;
+
+    public enum ItemType
+    {
+        HealthPotion,
+        SpeedPotion,
+        Bomb,
+    }
 
 }
