@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
+
 using UnityEngine;
 
 public class InventoryItemController : MonoBehaviour
 {
-    private Item item;
+    public Item item;
 
     public void SetItem(Item newItem)
     {
@@ -14,14 +12,14 @@ public class InventoryItemController : MonoBehaviour
 
     public void SelectItem()
     {
-        foreach (Item item in InventoryManager.Instance.itemsList)
+        for (int i = 0; i < InventoryManager.Instance.itemsArray.Length; i++)
         {
-            if (item.isSelected)
-            {
-                item.isSelected = false;
-            }
+            if (InventoryManager.Instance.itemsArray[i] != null && InventoryManager.Instance.itemsArray[i].isSelected)
+                InventoryManager.Instance.itemsArray[i].isSelected = false;
+
+            if (InventoryManager.Instance.itemsArray[i] == item)
+                InventoryManager.Instance.itemsArray[i].isSelected = true;
         }
-        item.isSelected = true;
         InventoryManager.Instance.selectedItem = item;
         InventoryManager.Instance.ListItems();
     }

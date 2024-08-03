@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +7,9 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance;
     public GameObject inventory;
-    public List<Item> itemsList = new List<Item>();
+    public GameObject slotsHolder;
+    public Item[] itemsArray;
+    public GameObject[] itemSlots;
     public Item selectedItem;
 
     public Transform ItemContent;
@@ -22,22 +21,58 @@ public class InventoryManager : MonoBehaviour
     public TextMeshProUGUI selectedItemDescription;
 
     public bool isInventoryOpen;
+
     private void Awake()
     {
         Instance = this;
     }
 
+    public void Start()
+    {
+        itemSlots = new GameObject[slotsHolder.transform.childCount];
+        for (int i = 0; i < slotsHolder.transform.childCount; i++)
+        {
+            itemSlots[i] = slotsHolder.transform.GetChild(i).gameObject;
+        }
+        itemsArray = new Item[itemSlots.Length];
+
+    }
     public void AddItem(Item item)
     {
-        if (itemsList.Contains(item))
-            item.amount++;
-        else
-            itemsList.Add(item);
+        bool itemAdded = false;
+
+        for (int i = 0; i < itemsArray.Length; i++)
+        {
+            if (itemsArray[i] != null && itemsArray[i] == item)
+            {
+                itemsArray[i].amount++;
+                itemAdded = true;
+                break;
+            }
+        }
+
+        if (!itemAdded)
+        {
+            for (int i = 0; i < itemsArray.Length; i++)
+            {
+                if (itemsArray[i] == null)
+                {
+                    itemsArray[i] = item;
+                    break;
+                }
+            }
+        }
+        ListItems();
     }
+
 
     public void RemoveItem(Item item)
     {
-        itemsList.Remove(item);
+        for (int i = 0; i < itemsArray.Length; i++)
+        {
+            if (itemsArray[i] == item)
+                itemsArray[i] = null;
+        }
     }
 
     public void Update()
@@ -68,51 +103,59 @@ public class InventoryManager : MonoBehaviour
     }
     public void ListItems()
     {
-        foreach (Transform item in ItemContent)
+        foreach (Transform slot in ItemContent)
         {
-            Destroy(item.gameObject);
-        }
-        foreach (var item in itemsList)
-        {
-            GameObject obj = Instantiate(InventoryItem, ItemContent);
-            var itemName = obj.transform.Find("ItemName").GetComponent<TextMeshProUGUI>();
-            var itemIcon = obj.transform.Find("ItemIcon").GetComponent<Image>();
-            var itemAmount = obj.transform.Find("ItemIcon/ItemAmount").GetComponent<TextMeshProUGUI>();
-
-            itemName.text = item.itemName;
-            itemIcon.sprite = item.itemIcon;
-            itemAmount.text = item.amount + "";
-
-            var controller = obj.GetComponent<InventoryItemController>();
-            controller.SetItem(item);
-
-            if (item.isSelected)
+            foreach (Transform child in slot)
             {
-                selectedItem = item;
-                ShowSelectedInfo(item);
+                Destroy(child.gameObject);
             }
+        }
+        int i = 0;
+        while (i < itemsArray.Length)
+        {
+            if (itemsArray[i] != null)
+            {
+                var item = itemsArray[i];
+                var slot = itemSlots[i];
+                GameObject obj = Instantiate(InventoryItem, slot.transform);
+                var itemName = obj.transform.Find("ItemName").GetComponent<TextMeshProUGUI>();
+                var itemIcon = obj.transform.Find("ItemIcon").GetComponent<Image>();
+                var itemAmount = obj.transform.Find("ItemIcon/ItemAmount").GetComponent<TextMeshProUGUI>();
+
+                itemName.text = item.itemName;
+                itemIcon.sprite = item.itemIcon;
+                itemAmount.text = item.amount.ToString();
+
+                var controller = obj.GetComponent<InventoryItemController>();
+                controller.SetItem(item);
+
+                if (item.isSelected)
+                {
+                    selectedItem = item;
+                    ShowSelectedInfo(item);
+                }
+            }
+            i++;
+
         }
         if (selectedItem == null)
         {
-            if (itemsList.Count != 0)
-            {
-                selectedItem = itemsList.First();
-                ShowSelectedInfo(selectedItem);
-            }
-            else
-            {
-                selectedItemName.text = "No item selected";
-                selectedItemIcon.sprite = null;
-                selectedItemAmount.text = "";
-                selectedItemDescription.text = "";
-            }
-
+            selectedItem = itemsArray[0];
+            ShowSelectedInfo(selectedItem);
         }
-
     }
 
     public void ShowSelectedInfo(Item item)
     {
+        if (item == null)
+        {
+            //Debug.Log("Inventario vuoto");
+            selectedItemName.text = "No item selected";
+            selectedItemIcon.sprite = null;
+            selectedItemAmount.text = "";
+            selectedItemDescription.text = "";
+            return;
+        }
         selectedItemName.text = item.itemName;
         selectedItemIcon.sprite = item.itemIcon;
         selectedItemAmount.text = item.amount + "";
@@ -171,5 +214,7 @@ public class InventoryManager : MonoBehaviour
         }
 
     }
+
+
 
 }
