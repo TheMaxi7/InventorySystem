@@ -1,46 +1,59 @@
-
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour
 {
+    // Singleton instance of the InventoryManager
     public static InventoryManager Instance;
-    public GameObject inventory;
-    public GameObject slotsHolder;
-    public Item[] itemsArray;
-    public GameObject[] itemSlots;
-    public Item selectedItem;
 
-    public Transform ItemContent;
-    public GameObject InventoryItem;
+    [Header("Inventory UI")]
+    public GameObject inventory;          // The inventory UI panel
+    public GameObject slotsHolder;        // The parent object that holds the slot UI elements
+    public Transform ItemContent;         // The content area where inventory items are listed
+    public GameObject InventoryItem;      // The prefab for displaying an inventory item
 
-    public Image selectedItemIcon;
-    public TextMeshProUGUI selectedItemName;
-    public TextMeshProUGUI selectedItemAmount;
-    public TextMeshProUGUI selectedItemDescription;
+    [Header("Selected Item UI")]
+    [SerializeField] private Image selectedItemIcon;        // The icon of the selected item
+    private Sprite defaultSelectedItemSprite;
+    [SerializeField] private TextMeshProUGUI selectedItemName;       // The name of the selected item
+    [SerializeField] private TextMeshProUGUI selectedItemAmount;     // The amount of the selected item
+    [SerializeField] private TextMeshProUGUI selectedItemDescription; // The description of the selected item
 
-    public bool isInventoryOpen;
+    [HideInInspector] public Item[] itemsArray;             // Array to hold items in the inventory
+    [HideInInspector] public GameObject[] itemSlots;        // Array to hold slot UI elements
+    [HideInInspector] public Item selectedItem;             // The currently selected item
+
+    [HideInInspector] public bool isInventoryOpen;          // Flag to check if the inventory is open
 
     private void Awake()
     {
+        // Set the singleton instance
         Instance = this;
     }
 
     public void Start()
     {
+        defaultSelectedItemSprite = selectedItemIcon.sprite;
+        // Initialize itemSlots array with the children of slotsHolder
         itemSlots = new GameObject[slotsHolder.transform.childCount];
         for (int i = 0; i < slotsHolder.transform.childCount; i++)
         {
             itemSlots[i] = slotsHolder.transform.GetChild(i).gameObject;
         }
+        // Initialize the itemsArray with the length of itemSlots
         itemsArray = new Item[itemSlots.Length];
-
     }
+
+    /// <summary>
+    /// Method to add an item to the inventory
+    /// </summary>
+    /// <param name="item"></param>
     public void AddItem(Item item)
     {
         bool itemAdded = false;
 
+        // Check if the item already exists in the inventory, increment its amount if it does
         for (int i = 0; i < itemsArray.Length; i++)
         {
             if (itemsArray[i] != null && itemsArray[i] == item)
@@ -51,6 +64,7 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
+        // If the item was not added, find an empty slot and add it there
         if (!itemAdded)
         {
             for (int i = 0; i < itemsArray.Length; i++)
@@ -62,10 +76,14 @@ public class InventoryManager : MonoBehaviour
                 }
             }
         }
+        // Refresh the inventory UI
         ListItems();
     }
 
-
+    /// <summary>
+    /// Method to remove an item from the inventory
+    /// </summary>
+    /// <param name="item"></param>
     public void RemoveItem(Item item)
     {
         for (int i = 0; i < itemsArray.Length; i++)
@@ -77,6 +95,7 @@ public class InventoryManager : MonoBehaviour
 
     public void Update()
     {
+        // Toggle inventory visibility when 'E' key is pressed
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (inventory.activeSelf)
@@ -84,25 +103,26 @@ public class InventoryManager : MonoBehaviour
                 inventory.SetActive(false);
                 isInventoryOpen = false;
                 Cursor.visible = false;
-                Debug.Log("Chiudi inventario");
+                Debug.Log("Inventory closed");
             }
             else
             {
-
                 inventory.SetActive(true);
                 isInventoryOpen = true;
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
                 ListItems();
-
-                Debug.Log("Apri inventario");
+                Debug.Log("Inventory opened");
             }
-
         }
-
     }
+
+    /// <summary>
+    /// Method to list items in the inventory UI
+    /// </summary>
     public void ListItems()
     {
+        // Clear existing items in the ItemContent otherwise they duplicate each time inventory is opened
         foreach (Transform slot in ItemContent)
         {
             foreach (Transform child in slot)
@@ -110,6 +130,8 @@ public class InventoryManager : MonoBehaviour
                 Destroy(child.gameObject);
             }
         }
+
+        // Populate the inventory UI with items
         int i = 0;
         while (i < itemsArray.Length)
         {
@@ -136,32 +158,39 @@ public class InventoryManager : MonoBehaviour
                 }
             }
             i++;
-
         }
-        if (selectedItem == null)
+
+        // If no item is selected, select the first item
+        if (selectedItem == null && itemsArray.Length > 0)
         {
             selectedItem = itemsArray[0];
             ShowSelectedInfo(selectedItem);
         }
     }
 
+    /// <summary>
+    /// Method to show the selected item information in the UI
+    /// </summary>
+    /// <param name="item"></param>
     public void ShowSelectedInfo(Item item)
     {
         if (item == null)
         {
-            //Debug.Log("Inventario vuoto");
             selectedItemName.text = "No item selected";
-            selectedItemIcon.sprite = null;
+            selectedItemIcon.sprite = defaultSelectedItemSprite;
             selectedItemAmount.text = "";
             selectedItemDescription.text = "";
             return;
         }
         selectedItemName.text = item.itemName;
         selectedItemIcon.sprite = item.itemIcon;
-        selectedItemAmount.text = item.amount + "";
+        selectedItemAmount.text = item.amount.ToString();
         selectedItemDescription.text = item.itemDescription;
     }
 
+    /// <summary>
+    /// Method to delete the selected item
+    /// </summary>
     public void DeleteItem()
     {
         if (selectedItem.amount <= 1)
@@ -176,45 +205,32 @@ public class InventoryManager : MonoBehaviour
             ListItems();
             ShowSelectedInfo(selectedItem);
         }
-
     }
 
+    /// <summary>
+    /// Method to use the selected item
+    /// </summary>
     public void UseItem()
     {
         switch (selectedItem.itemType)
         {
             case Item.ItemType.HealthPotion:
-                if (selectedItem.amount <= 1)
-                {
-                    Player.Instance.IncreaseHealth(selectedItem.value);
-                    DeleteItem();
-                }
-                else
-                {
-                    Player.Instance.IncreaseHealth(selectedItem.value);
-                    selectedItem.amount--;
-                    ListItems();
-                    ShowSelectedInfo(selectedItem);
-                }
+                Player.Instance.IncreaseHealth(selectedItem.value);
                 break;
             case Item.ItemType.SpeedPotion:
-                if (selectedItem.amount <= 1)
-                {
-                    Player.Instance.IncreaseMoveSpeed(selectedItem.value);
-                    DeleteItem();
-                }
-                else
-                {
-                    Player.Instance.IncreaseMoveSpeed(selectedItem.value);
-                    selectedItem.amount--;
-                    ListItems();
-                    ShowSelectedInfo(selectedItem);
-                }
+                Player.Instance.IncreaseMoveSpeed(selectedItem.value);
                 break;
         }
 
+        if (selectedItem.amount <= 1)
+        {
+            DeleteItem();
+        }
+        else
+        {
+            selectedItem.amount--;
+            ListItems();
+            ShowSelectedInfo(selectedItem);
+        }
     }
-
-
-
 }
