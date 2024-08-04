@@ -96,7 +96,7 @@ public class InventoryManager : MonoBehaviour
     public void Update()
     {
         // Toggle inventory visibility when 'E' key is pressed
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) && !GameUiManager.Instance.isGamePaused)
         {
             if (inventory.activeSelf)
             {

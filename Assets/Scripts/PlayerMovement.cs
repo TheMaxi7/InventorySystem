@@ -33,7 +33,7 @@ public class CharacterMovement : MonoBehaviour
     void Update()
     {
         // Check if the inventory is not open
-        if (!InventoryManager.Instance.isInventoryOpen)
+        if (!InventoryManager.Instance.isInventoryOpen && !GameUiManager.Instance.isGamePaused)
         {
             // Get the forward and right directions relative to the characters rotation
             Vector3 forward = transform.TransformDirection(Vector3.forward);
